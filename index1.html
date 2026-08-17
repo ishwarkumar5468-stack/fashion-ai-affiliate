@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fashion Affiliate AI</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <h1>✨ Fashion Affiliate AI</h1>
+  <p>Find products • Create Pins • Manage your affiliate posts</p>
+</header>
+
+<main>
+
+<section class="card">
+  <h2>🛍️ Add Product</h2>
+
+  <input id="productName" placeholder="Product name">
+  <input id="productUrl" placeholder="Flipkart / Myntra product URL">
+  <input id="affiliateUrl" placeholder="EarnKaro Profit Link">
+  <input id="productImage" placeholder="Product image URL">
+
+  <select id="category">
+    <option>Men's Fashion</option>
+    <option>Women's Fashion</option>
+    <option>Shoes</option>
+    <option>Accessories</option>
+    <option>College Fashion</option>
+  </select>
+
+  <button onclick="generatePin()">🤖 Generate Pin</button>
+</section>
+
+<section class="card">
+  <h2>📌 Pin Preview</h2>
+
+  <div id="preview">
+    <p>Your generated Pin will appear here.</p>
+  </div>
+
+  <button onclick="saveProduct()">💾 Save</button>
+</section>
+
+<section class="card">
+  <h2>📚 Saved Products</h2>
+  <div id="history"></div>
+</section>
+
+</main>
+
+<footer>
+  Fashion Affiliate AI • Pinterest Assistant
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
