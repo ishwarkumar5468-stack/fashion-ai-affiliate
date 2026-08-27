@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fashion Affiliate AI</title>
+<style>
+:root{--bg:#f5f6fa;--card:#fff;--text:#17181c;--muted:#6b7280;--line:#e5e7eb;--accent:#111827;--good:#087443;--danger:#b42318}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text)}
+header{background:var(--accent);color:#fff;padding:22px 16px}header h1{margin:0;font-size:24px}header p{margin:6px 0 0;color:#d1d5db}
+main{max-width:900px;margin:auto;padding:14px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 4px 18px #0000000a}
+h2{font-size:18px;margin:0 0 12px}label{display:block;font-size:13px;font-weight:650;margin:10px 0 5px}
+input,select,textarea{width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;background:#fff;font:inherit}textarea{min-height:100px;resize:vertical}
+button{border:0;border-radius:10px;padding:11px 14px;background:var(--accent);color:#fff;font-weight:700;cursor:pointer;margin:5px 5px 0 0}button.secondary{background:#eef0f3;color:#111827}button.danger{background:#b42318}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stat{padding:12px;border:1px solid var(--line);border-radius:12px;text-align:center}.stat b{display:block;font-size:22px}.muted{color:var(--muted);font-size:13px}.bar{height:10px;background:#e5e7eb;border-radius:99px;overflow:hidden}.bar i{display:block;height:100%;background:#111827;width:0}
+.pin{border:1px solid var(--line);border-radius:14px;overflow:hidden}.pin img{width:100%;max-height:420px;object-fit:cover;display:block}.pinbody{padding:14px}.pinbody h3{margin:0 0 8px}.history-item{border-top:1px solid var(--line);padding:12px 0}.history-item:first-child{border-top:0}.pill{display:inline-block;background:#eef0f3;border-radius:999px;padding:3px 8px;font-size:12px;margin-right:5px}
+.row{display:flex;gap:8px;align-items:end}.row>*{flex:1}footer{text-align:center;color:var(--muted);padding:20px;font-size:12px}
+@media(max-width:700px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(3,1fr)}.row{display:block}}
+</style>
+</head>
+<body>
+<header><h1>✨ Fashion Affiliate AI</h1><p>₹0 workflow dashboard • adjustable daily target</p></header>
+<main>
+<section class="card">
+<h2>📊 Daily Target</h2>
+<div class="row">
+<div><label>Posts per day</label><input id="target" type="number" min="1" max="100" value="30"></div>
+<div><button onclick="saveTarget()">Save target</button></div>
+</div>
+<div class="stats" style="margin-top:12px">
+<div class="stat"><b id="generated">0</b><span class="muted">Generated</span></div>
+<div class="stat"><b id="saved">0</b><span class="muted">Saved</span></div>
+<div class="stat"><b id="remaining">30</b><span class="muted">Remaining</span></div>
+</div>
+<div style="margin-top:12px"><div class="bar"><i id="progress"></i></div></div>
+</section>
+
+<div class="grid">
+<section class="card">
+<h2>🛍️ Product</h2>
+<label>Product name</label><input id="name" placeholder="e.g. Oversized T-shirt">
+<label>Store</label>
+<select id="store"><option>Flipkart</option><option>Myntra</option><option>Other</option></select>
+<label>Product URL</label><input id="url" type="url" placeholder="https://...">
+<label>EarnKaro Profit Link</label><input id="affiliate" type="url" placeholder="Paste your EarnKaro link">
+<label>Product image URL</label><input id="image" type="url" placeholder="https://...image.jpg">
+<label>Category</label>
+<select id="category"><option>Men's Fashion</option><option>Women's Fashion</option><option>Shoes</option><option>Accessories</option><option>College Fashion</option><option>Budget Fashion</option></select>
+<button onclick="generate()">🤖 Generate Pin</button>
+</section>
+
+<section class="card">
+<h2>📌 Pin Preview</h2>
+<div id="preview"><p class="muted">Enter a product and generate a Pin.</p></div>
+<button class="secondary" onclick="copyContent()">Copy title + description</button>
+<button onclick="saveProduct()">💾 Save to history</button>
+</section>
+</div>
+
+<section class="card">
+<h2>📚 History</h2>
+<div id="history"></div>
+<button class="danger" onclick="clearHistory()">Clear history</button>
+</section>
+
+<section class="card">
+<h2>⚙️ How to use</h2>
+<p class="muted">1. Find a permitted Flipkart/Myntra product. 2. Create its EarnKaro Profit Link using EarnKaro's approved method and paste it above. 3. Generate the Pin content. 4. Save it. 5. Post to Pinterest using Pinterest's permitted tools/API. This file does not bypass or automate third-party account security.</p>
+</section>
+</main>
+<footer>Your data stays in this browser's local storage. No paid API is required for this prototype.</footer>
+
+<script>
+let current=null;
+const $=id=>document.getElementById(id);
+const KEY="fashionAffiliateProductsV1", TARGET="fashionAffiliateTargetV1";
+
+function products(){return JSON.parse(localStorage.getItem(KEY)||"[]")}
+function target(){return Number(localStorage.getItem(TARGET)||30)}
+function saveTarget(){let n=Math.max(1,Math.min(100,Number($("target").value)||30));localStorage.setItem(TARGET,n);$("target").value=n;renderStats()}
+function todayKey(){let d=new Date();return d.toISOString().slice(0,10)}
+function todayCount(){return products().filter(p=>p.day===todayKey()).length}
+
+function generate(){
+ const name=$("name").value.trim(), aff=$("affiliate").value.trim(), img=$("image").value.trim(), cat=$("category").value;
+ if(!name){alert("Enter a product name.");return}
+ const hooks=[
+  `Trending ${cat.toLowerCase()} find you should see`,
+  `Affordable ${cat.toLowerCase()} pick`,
+  `Stylish ${cat.toLowerCase()} for everyday looks`,
+  `Budget fashion find worth checking`
+ ];
+ const hook=hooks[Math.floor(Math.random()*hooks.length)];
+ const title=`${name} — ${hook}`;
+ const description=`Looking for affordable and trending ${cat.toLowerCase()}? ${name} is a product worth checking. Save this idea for your next fashion find.${aff?"":" Add your EarnKaro Profit Link before publishing."}`;
+ current={name,store:$("store").value,url:$("url").value.trim(),affiliate:aff,image:img,category:cat,title,description,day:todayKey(),created:new Date().toLocaleString()};
+ renderPreview();
+ renderStats();
+}
+function renderPreview(){
+ if(!current)return;
+ $("preview").innerHTML=`<div class="pin">${current.image?`<img src="${esc(current.image)}" onerror="this.style.display='none'">`:""}<div class="pinbody"><h3>${esc(current.title)}</h3><p>${esc(current.description)}</p>${current.affiliate?`<a href="${esc(current.affiliate)}" target="_blank" rel="noopener">View affiliate link</a>`:""}</div></div>`;
+}
+function saveProduct(){
+ if(!current){alert("Generate a Pin first.");return}
+ let a=products();a.unshift(current);localStorage.setItem(KEY,JSON.stringify(a));renderHistory();renderStats();alert("Saved locally.");
+}
+function renderHistory(){
+ let a=products();
+ $("history").innerHTML=a.length?a.map((p,i)=>`<div class="history-item"><b>${i+1}. ${esc(p.name)}</b><br><span class="pill">${esc(p.store)}</span><span class="pill">${esc(p.category)}</span><span class="muted">${esc(p.created)}</span><br>${p.affiliate?`<a href="${esc(p.affiliate)}" target="_blank" rel="noopener">EarnKaro link</a>`:"<span class='muted'>No affiliate link added</span>"}</div>`).join(""):"<p class='muted'>No saved products yet.</p>";
+}
+function renderStats(){
+ let n=products(),t=target(),c=todayCount();$("target").value=t;$("generated").textContent=c;$("saved").textContent=n.length;$("remaining").textContent=Math.max(0,t-c);$("progress").style.width=Math.min(100,c/t*100)+"%";
+}
+function clearHistory(){if(confirm("Delete all saved local products?")){localStorage.removeItem(KEY);current=null;renderHistory();renderStats();$("preview").innerHTML="<p class='muted'>History cleared.</p>"}}
+async function copyContent(){
+ if(!current){alert("Generate a Pin first.");return}
+ const text=current.title+"\\n\\n"+current.description;
+ try{await navigator.clipboard.writeText(text);alert("Copied.")}catch(e){prompt("Copy this text:",text)}
+}
+function esc(s){return String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+renderHistory();renderStats();
+</script>
+</body>
+</html>
